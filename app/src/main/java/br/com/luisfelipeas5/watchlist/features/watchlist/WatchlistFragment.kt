@@ -15,6 +15,7 @@ import br.com.luisfelipeas5.watchlist.R
 import br.com.luisfelipeas5.watchlist.databinding.FragmentWatchlistBinding
 import br.com.luisfelipeas5.watchlist.domain.entities.movies.Movie
 import br.com.luisfelipeas5.watchlist.features.addmovie.AddMovieFragment
+import br.com.luisfelipeas5.watchlist.features.watchlist.adapter.MoviesAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
