@@ -6,7 +6,7 @@ import android.os.Parcelable
 class Movie(
     val title: String,
     val whoRecommended: String,
-    val watched: Boolean,
+    var watched: Boolean,
     val cover: String,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(

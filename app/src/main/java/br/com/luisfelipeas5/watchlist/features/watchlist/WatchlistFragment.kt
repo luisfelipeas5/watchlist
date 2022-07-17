@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import br.com.luisfelipeas5.watchlist.R
@@ -19,11 +20,15 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class WatchlistFragment : Fragment() {
 
+    private val onMovieWatched = { movie: Movie, watched: Boolean ->
+        onMovieWatchedCallback(movie, watched)
+    }
+
     private var _binding: FragmentWatchlistBinding? = null
 
     private val viewModel: WatchlistViewModel by viewModels()
 
-    private val moviesAdapter = MoviesAdapter()
+    private val moviesAdapter = MoviesAdapter(onMovieWatched)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +45,10 @@ class WatchlistFragment : Fragment() {
         }
     }
 
+    private fun onMovieUpdated(movie: Movie) {
+        moviesAdapter.updated(movie)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,6 +57,7 @@ class WatchlistFragment : Fragment() {
 
         viewModel.loading.observe(viewLifecycleOwner) { onLoading(it) }
         viewModel.movies.observe(viewLifecycleOwner) { onMoviesReady(it) }
+        viewModel.movieUpdated.observe(viewLifecycleOwner) { onMovieUpdated(it) }
 
         if (moviesAdapter.itemCount == 0) {
             viewModel.loadNextPage()
@@ -63,6 +73,9 @@ class WatchlistFragment : Fragment() {
             fabAddMovie.setOnClickListener { onAddMovieButtonClicked() }
             rvMovies.adapter = moviesAdapter
             rvMovies.addOnScrollListener(onScrollListener)
+
+            val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
+            itemTouchHelper.attachToRecyclerView(rvMovies)
         }
     }
 
@@ -76,6 +89,10 @@ class WatchlistFragment : Fragment() {
 
     private fun onLoading(signingIn: Boolean) {
         _binding?.pbLoading?.visibility = if (signingIn) View.VISIBLE else View.GONE
+    }
+
+    private fun onMovieWatchedCallback(movie: Movie, watched: Boolean) {
+        viewModel.setMovieWatched(movie, watched)
     }
 
     private val onScrollListener = object: RecyclerView.OnScrollListener() {
@@ -99,6 +116,25 @@ class WatchlistFragment : Fragment() {
             }
             return 0
         }
+    }
+
+    private val simpleItemTouchCallback = object: ItemTouchHelper.SimpleCallback(
+        0,
+        ItemTouchHelper.LEFT,
+    ) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            return  false
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val position = viewHolder.adapterPosition
+            moviesAdapter.delete(position)
+        }
+
     }
 
     override fun onDestroyView() {

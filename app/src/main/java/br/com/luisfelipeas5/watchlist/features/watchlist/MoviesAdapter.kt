@@ -8,7 +8,9 @@ import br.com.luisfelipeas5.watchlist.databinding.ViewHolderMoviesBinding
 import br.com.luisfelipeas5.watchlist.domain.entities.movies.Movie
 import com.bumptech.glide.Glide
 
-class MoviesAdapter: RecyclerView.Adapter<MoviesAdapter.ViewHolder>() {
+class MoviesAdapter(
+    private val onMovieWatched: (movie: Movie, watched: Boolean) -> Unit,
+): RecyclerView.Adapter<MoviesAdapter.ViewHolder>() {
 
     private val movies = mutableListOf<Movie>()
 
@@ -39,9 +41,8 @@ class MoviesAdapter: RecyclerView.Adapter<MoviesAdapter.ViewHolder>() {
             tvWhoRecommended.text = movie.whoRecommended
             cbWatched.isChecked = movie.watched
 
-            val coverPath = "https://image.tmdb.org/t/p/w780${movie.cover}"
             Glide.with(ivCover)
-                .load(coverPath)
+                .load(movie.cover)
                 .centerCrop()
                 .into(ivCover)
         }
@@ -59,7 +60,27 @@ class MoviesAdapter: RecyclerView.Adapter<MoviesAdapter.ViewHolder>() {
         notifyDataSetChanged()
     }
 
+    fun updated(movie: Movie) {
+        notifyDataSetChanged()
+    }
+
+    fun delete(position: Int) {
+        movies.removeAt(position)
+        notifyDataSetChanged()
+    }
+
     inner class ViewHolder(
         val binding: ViewHolderMoviesBinding
-    ): RecyclerView.ViewHolder(binding.root)
+    ): RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.cbWatched.setOnCheckedChangeListener { _, checked ->
+                val movie = movies[adapterPosition]
+                if (checked != movie.watched) {
+                    onMovieWatched(movie, checked)
+                }
+            }
+        }
+
+    }
 }

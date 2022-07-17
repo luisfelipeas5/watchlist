@@ -4,8 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
+import androidx.navigation.fragment.findNavController
 import br.com.luisfelipeas5.watchlist.databinding.FragmentAddMovieBinding
+import br.com.luisfelipeas5.watchlist.domain.entities.movies.Movie
 
 class AddMovieFragment: Fragment() {
 
@@ -26,7 +30,25 @@ class AddMovieFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding?.btAdd?.setOnClickListener { onButtonClickListener() }
+    }
 
+    private fun onButtonClickListener() {
+        _binding?.apply {
+            val movie = Movie(
+               title = etTitle.text.toString(),
+               whoRecommended = etWhoRecommended.text.toString(),
+                watched = false,
+                cover = etCoverUrl.text.toString(),
+            )
+            onCreated(movie)
+        }
+    }
+
+
+    private fun onCreated(movie: Movie) {
+        setFragmentResult(ADD_MOVIE_REQUEST_KEY, bundleOf(ADD_MOVIE_RESULT_KEY to movie))
+        findNavController().popBackStack()
     }
 
     override fun onDestroyView() {

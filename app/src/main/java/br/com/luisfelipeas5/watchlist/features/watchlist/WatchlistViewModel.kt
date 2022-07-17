@@ -18,6 +18,8 @@ class WatchlistViewModel @Inject constructor(
 
     val movies: LiveData<List<Movie>> = MutableLiveData()
 
+    val movieUpdated: LiveData<Movie> = MutableLiveData()
+
     private var pageIndex = 0
     private var maxPageReached = false
 
@@ -35,6 +37,18 @@ class WatchlistViewModel @Inject constructor(
             movies.postValue(moviesPage)
 
             loading.postValue(false)
+        }
+    }
+
+    fun setMovieWatched(movie: Movie, watched: Boolean) {
+        viewModelScope.launch {
+            try {
+                movie.watched = watched
+                repository.updateMovie(movie)
+            } catch (exception: Throwable) {
+                movie.watched = !watched
+            }
+            movieUpdated.postValue(movie)
         }
     }
 
