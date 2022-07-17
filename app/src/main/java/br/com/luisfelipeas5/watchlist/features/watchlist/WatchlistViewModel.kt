@@ -46,9 +46,11 @@ class WatchlistViewModel @Inject constructor(
                 movie.watched = watched
                 repository.updateMovie(movie)
             } catch (exception: Throwable) {
-                movie.watched = !watched
+                val movieUpdated = movie.copyWith(
+                    watched = !watched,
+                )
+                this@WatchlistViewModel.movieUpdated.postValue(movieUpdated)
             }
-            movieUpdated.postValue(movie)
         }
     }
 
