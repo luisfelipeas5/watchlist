@@ -28,6 +28,20 @@ class Movie(
         return 0
     }
 
+    fun copyWith(
+        title: String? = null,
+        whoRecommended: String? = null,
+        watched: Boolean? = null,
+        cover: String? = null,
+    ): Movie {
+        return Movie(
+            title= title ?: this.title,
+            whoRecommended = whoRecommended ?: this.whoRecommended,
+            watched= watched ?: this.watched,
+            cover = cover ?: this.cover,
+        )
+    }
+
     companion object CREATOR : Parcelable.Creator<Movie> {
         override fun createFromParcel(parcel: Parcel): Movie {
             return Movie(parcel)
