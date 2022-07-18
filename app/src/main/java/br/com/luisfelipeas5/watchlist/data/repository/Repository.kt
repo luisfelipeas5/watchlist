@@ -14,7 +14,7 @@ class Repository @Inject constructor(
     }
 
     suspend fun updateMovie(movie: Movie) {
-        delay(3000)
+        delay(1500)
         throw Exception("Movie update failed")
     }
 }

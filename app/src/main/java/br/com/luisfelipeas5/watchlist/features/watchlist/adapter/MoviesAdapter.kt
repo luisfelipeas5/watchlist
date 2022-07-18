@@ -52,45 +52,35 @@ class MoviesAdapter(
     override fun getItemCount() = movies.size
 
     fun addNewMovies(newMovies: List<Movie>) {
-        val oldList = mutableListOf<Movie>().apply {
-            addAll(movies)
+        dispatchDiffUtil {
+            movies.addAll(newMovies)
         }
-        movies.addAll(newMovies)
-
-        val callback = MoviesDiffUtilCallback(oldList, movies)
-        DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
     }
 
     fun add(movieAdded: Movie) {
-        val oldList = mutableListOf<Movie>().apply {
-            addAll(movies)
+        dispatchDiffUtil {
+            movies.add(0, movieAdded)
         }
-        movies.add(0, movieAdded)
-
-        val callback = MoviesDiffUtilCallback(oldList, movies)
-        DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
     }
 
-    //TODO Something wrong here!
     fun updated(movie: Movie) {
-        val oldList = mutableListOf<Movie>().apply {
-            addAll(movies)
+        dispatchDiffUtil {
+            val indexOf = movies.indexOfFirst { it.title == movie.title }
+            movies[indexOf] = movie
         }
-
-        val indexOf = movies.indexOfFirst { it.title == movie.title }
-        movies[indexOf] = movie
-
-        val callback = MoviesDiffUtilCallback(oldList, movies)
-        DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
     }
 
     fun delete(position: Int) {
+        dispatchDiffUtil {
+            movies.removeAt(position)
+        }
+    }
+
+    private fun dispatchDiffUtil(doModifications: () -> Unit) {
         val oldList = mutableListOf<Movie>().apply {
             addAll(movies)
         }
-
-        movies.removeAt(position)
-
+        doModifications()
         val callback = MoviesDiffUtilCallback(oldList, movies)
         DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
     }
