@@ -1,4 +1,4 @@
-package br.com.luisfelipeas5.watchlist.features.watchlist
+package br.com.luisfelipeas5.watchlist.features.watchlist.adapter
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -51,22 +51,24 @@ class MoviesAdapter(
     override fun getItemCount() = movies.size
 
     fun addNewMovies(newMovies: List<Movie>) {
+        val oldLength = movies.size
         movies.addAll(newMovies)
-        notifyDataSetChanged()
+        notifyItemRangeInserted(oldLength, newMovies.size)
     }
 
     fun add(movieAdded: Movie) {
         movies.add(0, movieAdded)
-        notifyDataSetChanged()
+        notifyItemInserted(0)
     }
 
     fun updated(movie: Movie) {
-        notifyDataSetChanged()
+        val indexOf = movies.indexOf(movie)
+        notifyItemChanged(indexOf)
     }
 
     fun delete(position: Int) {
         movies.removeAt(position)
-        notifyDataSetChanged()
+        notifyItemRemoved(position)
     }
 
     inner class ViewHolder(
