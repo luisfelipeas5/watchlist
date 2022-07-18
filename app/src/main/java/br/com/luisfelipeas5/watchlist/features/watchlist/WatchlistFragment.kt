@@ -41,13 +41,9 @@ class WatchlistFragment : Fragment() {
     private fun onAddMovieResult(bundle: Bundle) {
         val movieAdded = bundle.getParcelable<Movie>(AddMovieFragment.ADD_MOVIE_RESULT_KEY)
         if (movieAdded != null) {
-            moviesAdapter.add(movieAdded)
+            viewModel.addMovie(movieAdded)
             _binding?.rvMovies?.smoothScrollToPosition(0)
         }
-    }
-
-    private fun onMovieUpdated(movie: Movie) {
-        moviesAdapter.updated(movie)
     }
 
     override fun onCreateView(
@@ -58,7 +54,6 @@ class WatchlistFragment : Fragment() {
 
         viewModel.loading.observe(viewLifecycleOwner) { onLoading(it) }
         viewModel.movies.observe(viewLifecycleOwner) { onMoviesReady(it) }
-        viewModel.movieUpdated.observe(viewLifecycleOwner) { onMovieUpdated(it) }
 
         if (moviesAdapter.itemCount == 0) {
             viewModel.loadNextPage()
@@ -80,8 +75,8 @@ class WatchlistFragment : Fragment() {
         }
     }
 
-    private fun onMoviesReady(newMovies: List<Movie>) {
-        moviesAdapter.addNewMovies(newMovies)
+    private fun onMoviesReady(movies: List<Movie>) {
+        moviesAdapter.submitList(movies)
     }
 
     private fun onAddMovieButtonClicked() {
@@ -133,7 +128,7 @@ class WatchlistFragment : Fragment() {
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val position = viewHolder.adapterPosition
-            moviesAdapter.delete(position)
+            viewModel.removeMovie(position)
         }
 
     }
