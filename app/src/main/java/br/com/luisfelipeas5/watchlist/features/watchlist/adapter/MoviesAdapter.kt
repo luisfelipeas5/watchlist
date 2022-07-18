@@ -3,6 +3,7 @@ package br.com.luisfelipeas5.watchlist.features.watchlist.adapter
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import br.com.luisfelipeas5.watchlist.databinding.ViewHolderMoviesBinding
 import br.com.luisfelipeas5.watchlist.domain.entities.movies.Movie
@@ -51,24 +52,47 @@ class MoviesAdapter(
     override fun getItemCount() = movies.size
 
     fun addNewMovies(newMovies: List<Movie>) {
-        val oldLength = movies.size
+        val oldList = mutableListOf<Movie>().apply {
+            addAll(movies)
+        }
         movies.addAll(newMovies)
-        notifyItemRangeInserted(oldLength, newMovies.size)
+
+        val callback = MoviesDiffUtilCallback(oldList, movies)
+        DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
     }
 
     fun add(movieAdded: Movie) {
+        val oldList = mutableListOf<Movie>().apply {
+            addAll(movies)
+        }
         movies.add(0, movieAdded)
-        notifyItemInserted(0)
+
+        val callback = MoviesDiffUtilCallback(oldList, movies)
+        DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
     }
 
+    //TODO Something wrong here!
     fun updated(movie: Movie) {
-        val indexOf = movies.indexOf(movie)
-        notifyItemChanged(indexOf)
+        val oldList = mutableListOf<Movie>().apply {
+            addAll(movies)
+        }
+
+        val indexOf = movies.indexOfFirst { it.title == movie.title }
+        movies[indexOf] = movie
+
+        val callback = MoviesDiffUtilCallback(oldList, movies)
+        DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
     }
 
     fun delete(position: Int) {
+        val oldList = mutableListOf<Movie>().apply {
+            addAll(movies)
+        }
+
         movies.removeAt(position)
-        notifyItemRemoved(position)
+
+        val callback = MoviesDiffUtilCallback(oldList, movies)
+        DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
     }
 
     inner class ViewHolder(
