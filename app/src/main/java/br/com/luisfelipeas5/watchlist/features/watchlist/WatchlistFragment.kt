@@ -77,6 +77,10 @@ class WatchlistFragment : Fragment() {
         _binding?.apply {
             fabAddMovie.setOnClickListener { onAddMovieButtonClicked() }
             rvMovies.adapter = moviesAdapter
+            moviesAdapter.withLoadStateHeaderAndFooter(
+                header = MoviesLoadStateAdapter(),
+                footer = MoviesLoadStateAdapter(),
+            )
 
             val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
             itemTouchHelper.attachToRecyclerView(rvMovies)

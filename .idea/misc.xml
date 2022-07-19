@@ -8,6 +8,7 @@
         <entry key="app/src/main/res/layout/content_watchlist.xml" value="0.19610507246376813" />
         <entry key="app/src/main/res/layout/fragment_add_movie.xml" value="0.19610507246376813" />
         <entry key="app/src/main/res/layout/fragment_watchlist.xml" value="0.23697916666666666" />
+        <entry key="app/src/main/res/layout/view_holder_movides_load_state.xml" value="0.19610507246376813" />
         <entry key="app/src/main/res/layout/view_holder_movies.xml" value="0.23697916666666666" />
       </map>
     </option>
