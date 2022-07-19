@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.PagingData
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import br.com.luisfelipeas5.watchlist.R
@@ -19,6 +20,7 @@ import br.com.luisfelipeas5.watchlist.databinding.FragmentWatchlistBinding
 import br.com.luisfelipeas5.watchlist.domain.entities.movies.Movie
 import br.com.luisfelipeas5.watchlist.features.addmovie.AddMovieFragment
 import br.com.luisfelipeas5.watchlist.features.watchlist.adapter.MoviesAdapter
+import br.com.luisfelipeas5.watchlist.features.watchlist.adapter.MoviesLoadStateAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -65,8 +67,7 @@ class WatchlistFragment : Fragment() {
     private fun observeLoading() {
         lifecycleScope.launch {
             moviesAdapter.loadStateFlow.collect {
-                _binding?.pbLoading?.isVisible = it.source.refresh is LoadState.Loading ||
-                        it.source.append is LoadState.Loading
+                _binding?.pbLoading?.isVisible = it.source.refresh is LoadState.Loading
             }
         }
     }
@@ -76,15 +77,19 @@ class WatchlistFragment : Fragment() {
 
         _binding?.apply {
             fabAddMovie.setOnClickListener { onAddMovieButtonClicked() }
-            rvMovies.adapter = moviesAdapter
-            moviesAdapter.withLoadStateHeaderAndFooter(
-                header = MoviesLoadStateAdapter(),
-                footer = MoviesLoadStateAdapter(),
-            )
+            rvMovies.adapter = getAdapter()
 
             val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
             itemTouchHelper.attachToRecyclerView(rvMovies)
         }
+    }
+
+    private fun getAdapter(): ConcatAdapter {
+        val retry = moviesAdapter::retry
+        return moviesAdapter.withLoadStateHeaderAndFooter(
+            header = MoviesLoadStateAdapter(retry),
+            footer = MoviesLoadStateAdapter(retry),
+        )
     }
 
     private fun onMoviesReady(moviesPagingData: PagingData<Movie>?) {

@@ -7,7 +7,7 @@ import javax.inject.Inject
 class RemoteDataSource @Inject constructor() {
 
     suspend fun getWatchlist(pageIndex: Int): List<Movie> {
-        delay(2000)
+        delay(3000)
         return when (pageIndex) {
             0 -> getFirstPageMovies()
             1 -> getSecondPageMovies()
@@ -17,7 +17,7 @@ class RemoteDataSource @Inject constructor() {
     }
 
     private fun getFirstPageMovies(): List<Movie> {
-        return listOf(
+        return mutableListOf(
             Movie(
                 title = "A Chegada",
                 whoRecommended = "Vitor Capobianco",
@@ -66,7 +66,45 @@ class RemoteDataSource @Inject constructor() {
                 watched = false,
                 cover = "https://image.tmdb.org/t/p/w780/iNAMRPUEEsNIAiZL0RmVmIGjiv1.jpg",
             ),
-        )
+            Movie(
+                title = "A Prova de Morte",
+                whoRecommended = "André Castrofo",
+                watched = false,
+                cover = "https://image.tmdb.org/t/p/w780/vtu6H4NWnQVqEp3aanUq3hNeeot.jpg",
+            ),
+            Movie(
+                title = "Cães de Aluguel",
+                whoRecommended = "André Castrofo",
+                watched = false,
+                cover = "https://image.tmdb.org/t/p/w780/g6R1OT7ETBLGLeUJOE0pOiAFHcI.jpg",
+            ),
+            Movie(
+                title = "Kill Bill",
+                whoRecommended = "André Castrofo",
+                watched = false,
+                cover = "https://image.tmdb.org/t/p/w780/lVy5Zqcty2NfemqKYbVJfdg44rK.jpg",
+            ),
+            Movie(
+                title = "Django",
+                whoRecommended = "André Castrofo",
+                watched = false,
+                cover = "https://image.tmdb.org/t/p/w780/6MCVqErhPC0p6RkzZsLuIb6LZ1L.jpg",
+            ),
+            Movie(
+                title = "Jackie Brown",
+                whoRecommended = "André Castrofo",
+                watched = false,
+                cover = "https://image.tmdb.org/t/p/w780/u04CYmXVpppyPjl7JzThYmV8Kwg.jpg",
+            ),
+            Movie(
+                title = "Pulp Fiction",
+                whoRecommended = "André Castrofo",
+                watched = false,
+                cover = "https://image.tmdb.org/t/p/w780/suaEOtk1N1sgg2MTM7oZd2cfVp3.jpg",
+            ),
+        ).apply {
+            addAll(getThirdPageMovies())
+        }
     }
 
     private fun getSecondPageMovies(): List<Movie> {
