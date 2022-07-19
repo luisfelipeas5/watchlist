@@ -4,12 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import br.com.luisfelipeas5.watchlist.R
 import br.com.luisfelipeas5.watchlist.databinding.FragmentWatchlistBinding
@@ -17,6 +20,7 @@ import br.com.luisfelipeas5.watchlist.domain.entities.movies.Movie
 import br.com.luisfelipeas5.watchlist.features.addmovie.AddMovieFragment
 import br.com.luisfelipeas5.watchlist.features.watchlist.adapter.MoviesAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class WatchlistFragment : Fragment() {
@@ -52,14 +56,19 @@ class WatchlistFragment : Fragment() {
     ): View? {
         _binding = FragmentWatchlistBinding.inflate(inflater, container, false)
 
-        viewModel.loading.observe(viewLifecycleOwner) { onLoading(it) }
         viewModel.movies.observe(viewLifecycleOwner) { onMoviesReady(it) }
-
-        if (moviesAdapter.itemCount == 0) {
-            viewModel.loadNextPage()
-        }
+        observeLoading()
 
         return _binding?.root
+    }
+
+    private fun observeLoading() {
+        lifecycleScope.launch {
+            moviesAdapter.loadStateFlow.collect {
+                _binding?.pbLoading?.isVisible = it.source.refresh is LoadState.Loading ||
+                        it.source.append is LoadState.Loading
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -68,50 +77,26 @@ class WatchlistFragment : Fragment() {
         _binding?.apply {
             fabAddMovie.setOnClickListener { onAddMovieButtonClicked() }
             rvMovies.adapter = moviesAdapter
-            rvMovies.addOnScrollListener(onScrollListener)
 
             val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
             itemTouchHelper.attachToRecyclerView(rvMovies)
         }
     }
 
-    private fun onMoviesReady(movies: List<Movie>) {
-        moviesAdapter.submitList(movies)
+    private fun onMoviesReady(moviesPagingData: PagingData<Movie>?) {
+        lifecycleScope.launch {
+            moviesPagingData?.let {
+                moviesAdapter.submitData(it)
+            }
+        }
     }
 
     private fun onAddMovieButtonClicked() {
         findNavController().navigate(R.id.action_watchlistFragment_to_addMovieFragment)
     }
 
-    private fun onLoading(signingIn: Boolean) {
-        _binding?.pbLoading?.visibility = if (signingIn) View.VISIBLE else View.GONE
-    }
-
     private fun onMovieWatchedCallback(movie: Movie, watched: Boolean) {
         viewModel.setMovieWatched(movie, watched)
-    }
-
-    private val onScrollListener = object: RecyclerView.OnScrollListener() {
-
-        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-            val visibleItemCount = _binding?.rvMovies?.childCount ?: 0
-            val totalItemCount = moviesAdapter.itemCount
-            val firstVisibleItem = getFirstVisibleItem()
-
-            val loading = viewModel.loading.value ?:false
-            if (!loading && (totalItemCount - visibleItemCount) <= firstVisibleItem) {
-                viewModel.loadNextPage()
-            }
-
-        }
-
-        private fun getFirstVisibleItem(): Int {
-            val layoutManager = _binding?.rvMovies?.layoutManager
-            if (layoutManager is LinearLayoutManager) {
-                return layoutManager.findFirstVisibleItemPosition()
-            }
-            return 0
-        }
     }
 
     private val simpleItemTouchCallback = object: ItemTouchHelper.SimpleCallback(
@@ -127,7 +112,7 @@ class WatchlistFragment : Fragment() {
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            val position = viewHolder.adapterPosition
+            val position = viewHolder.bindingAdapterPosition
             viewModel.removeMovie(position)
         }
 
