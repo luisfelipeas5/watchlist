@@ -49,4 +49,5 @@
     <string name="title">Título</string>
     <string name="who_recommended">Quem recomendou?</string>
     <string name="cover_url">URL da capa</string>
+    <string name="retry">Carregar novamente</string>
 </resources>
