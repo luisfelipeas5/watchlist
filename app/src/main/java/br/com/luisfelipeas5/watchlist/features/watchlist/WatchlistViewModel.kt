@@ -18,8 +18,7 @@ class WatchlistViewModel @Inject constructor(
 
     val movies: LiveData<List<Movie>> = MutableLiveData()
 
-    val movieUpdated: LiveData<Movie> = MutableLiveData()
-
+    private val _movies = mutableListOf<Movie>()
     private var pageIndex = 0
     private var maxPageReached = false
 
@@ -30,11 +29,12 @@ class WatchlistViewModel @Inject constructor(
             loading.postValue(true)
 
             val moviesPage = repository.getWatchlist(pageIndex)
+            _movies.addAll(moviesPage)
 
             maxPageReached = moviesPage.isEmpty()
             pageIndex++
 
-            movies.postValue(moviesPage)
+            postMovies()
 
             loading.postValue(false)
         }
@@ -46,12 +46,31 @@ class WatchlistViewModel @Inject constructor(
                 movie.watched = watched
                 repository.updateMovie(movie)
             } catch (exception: Throwable) {
+
+
                 val movieUpdated = movie.copyWith(
                     watched = !watched,
                 )
-                this@WatchlistViewModel.movieUpdated.postValue(movieUpdated)
+                val indexOf = _movies.indexOfFirst { it.title == movie.title }
+                _movies[indexOf] = movieUpdated
+                postMovies()
             }
         }
+    }
+
+    fun addMovie(movie: Movie) {
+        _movies.add(0, movie)
+        postMovies()
+    }
+
+    fun removeMovie(index: Int) {
+        _movies.removeAt(index)
+        postMovies()
+    }
+
+    private fun postMovies() {
+        val moviesCopied = _movies.toList()
+        movies.postValue(moviesCopied)
     }
 
 }
