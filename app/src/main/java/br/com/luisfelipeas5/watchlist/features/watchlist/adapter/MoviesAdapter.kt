@@ -3,7 +3,7 @@ package br.com.luisfelipeas5.watchlist.features.watchlist.adapter
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.ListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView
 import br.com.luisfelipeas5.watchlist.databinding.ViewHolderMoviesBinding
 import br.com.luisfelipeas5.watchlist.domain.entities.movies.Movie
@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide
 
 class MoviesAdapter(
     private val onMovieWatched: (movie: Movie, watched: Boolean) -> Unit,
-): ListAdapter<Movie, MoviesAdapter.ViewHolder>(MoviesDiffUtilItemCallback()) {
+): PagingDataAdapter<Movie, MoviesAdapter.ViewHolder>(MoviesDiffUtilItemCallback()) {
 
     private var onCreateViewHolderCounter = 0
     private var onBindViewViewHolderCounter = 0
@@ -36,12 +36,12 @@ class MoviesAdapter(
 
         val movie = getItem(position)
         holder.binding.apply {
-            tvTitle.text = movie.title
-            tvWhoRecommended.text = movie.whoRecommended
-            cbWatched.isChecked = movie.watched
+            tvTitle.text = movie?.title
+            tvWhoRecommended.text = movie?.whoRecommended
+            cbWatched.isChecked = movie?.watched ?: false
 
             Glide.with(ivCover)
-                .load(movie.cover)
+                .load(movie?.cover)
                 .centerCrop()
                 .into(ivCover)
         }
@@ -53,10 +53,12 @@ class MoviesAdapter(
 
         init {
             binding.cbWatched.setOnCheckedChangeListener { _, checked ->
-                val movie = getItem(adapterPosition)
-                if (checked != movie.watched) {
-                    onMovieWatched(movie, checked)
+                getItem(bindingAdapterPosition)?.let { movie ->
+                    if (checked != movie.watched) {
+                        onMovieWatched(movie, checked)
+                    }
                 }
+
             }
         }
 
